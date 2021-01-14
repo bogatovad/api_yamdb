@@ -1,8 +1,6 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
 from .models import Comment, Review, Category, Genre, Title
-
-User = get_user_model()
+from .models import User
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -14,13 +12,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ['id', 'text', 'author', 'score', 'pub_date']
-        # validators = [
-        #     serializers.UniqueTogetherValidator(
-        #         queryset=Review.objects.all(),
-        #         fields=('title_id', 'author'),
-        #         message='cannot add another review'
-        #     )
-        # ]
+
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -32,28 +24,6 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ['id', 'text', 'author', 'pub_date']
-
-
-# class CategorySerializer(serializers.ModelSerializer):
-#     # slug = serializers.SlugRelatedField(
-#     #     slug_field='slug',
-#     #     read_only=True,
-#     #     default=serializers.CurrentUserDefault())
-#
-#     class Meta:
-#         fields = ('__all__')
-#         model = Category
-#
-#
-# class GenreSerializer(serializers.ModelSerializer):
-#     # slug = serializers.SlugRelatedField(
-#     #     slug_field='slug',
-#     #     read_only=True,
-#     #     default=serializers.CurrentUserDefault())
-#
-#     class Meta:
-#         fields = ('__all__')
-#         model = Genre
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -69,12 +39,16 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    name = serializers.SlugRelatedField(
-        slug_field='name',
-        read_only=True,
-        default=serializers.CurrentUserDefault())
+    genre = GenreSerializer(many=True, read_only=True)
+    category = CategorySerializer(many=False)
 
     class Meta:
         fields = ('__all__')
         model = Title
 
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name',
+                  'username', 'bio', 'email', 'role')

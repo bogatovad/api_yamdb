@@ -1,10 +1,27 @@
-import datetime
-
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
+from django.utils.translation import gettext_lazy as _
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-User = get_user_model()
+
+
+
+class CustomUser(AbstractUser):
+    bio = models.TextField(max_length=500, blank=True)
+    email = models.EmailField(_('email'), unique=True)
+    ROLE_CHOICES = [
+        ('user', 'User'),
+        ('moderator', 'Moderator'),
+        ('admin', 'Admin'),
+    ]
+    role = models.CharField(max_length=10,
+                            choices=ROLE_CHOICES,
+                            default='user')
+
+
+
+
 
 
 class Category(models.Model):
@@ -32,17 +49,28 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField(verbose_name='название', max_length=200)
+    name = models.CharField(verbose_name='название', max_length=200,
+                            unique=True)
     year = models.IntegerField(
         verbose_name='год',
         blank=True,
         null=True,
-        validators=[MaxValueValidator(datetime.date.today().year)],
+    )
+    rating = models.IntegerField(
+        verbose_name='рейтинг',
+        blank=True,
+        null=True,
     )
     description = models.TextField(
         verbose_name='описание',
         max_length=2000,
         blank=True,
+    )
+    genre = models.ManyToManyField(
+        to=Genre,
+        related_name='titles',
+        blank=True,
+        verbose_name='жанры',
     )
     category = models.ForeignKey(
         to=Category,
@@ -52,19 +80,13 @@ class Title(models.Model):
         blank=True,
         null=True,
     )
-    genre = models.ManyToManyField(
-        to=Genre,
-        related_name='titles',
-        blank=True,
-        verbose_name='жанры',
-    )
-
-    def __str__(self):
-        return self.name
 
     class Meta:
         verbose_name = 'произведение'
         verbose_name_plural = 'произведения'
+
+
+User = get_user_model()
 
 
 class Review(models.Model):
@@ -122,3 +144,4 @@ class Comment(models.Model):
     class Meta:
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'
+

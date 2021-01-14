@@ -34,26 +34,39 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ['id', 'text', 'author', 'pub_date']
 
 
-class CategorySerializer(serializers.ModelSerializer):
-    # slug = serializers.SlugRelatedField(
-    #     slug_field='slug',
-    #     read_only=True,
-    #     default=serializers.CurrentUserDefault())
+# class CategorySerializer(serializers.ModelSerializer):
+#     # slug = serializers.SlugRelatedField(
+#     #     slug_field='slug',
+#     #     read_only=True,
+#     #     default=serializers.CurrentUserDefault())
+#
+#     class Meta:
+#         fields = ('__all__')
+#         model = Category
+#
+#
+# class GenreSerializer(serializers.ModelSerializer):
+#     # slug = serializers.SlugRelatedField(
+#     #     slug_field='slug',
+#     #     read_only=True,
+#     #     default=serializers.CurrentUserDefault())
+#
+#     class Meta:
+#         fields = ('__all__')
+#         model = Genre
 
+
+class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('__all__')
         model = Category
+        fields = ('name','slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
-    # slug = serializers.SlugRelatedField(
-    #     slug_field='slug',
-    #     read_only=True,
-    #     default=serializers.CurrentUserDefault())
-
     class Meta:
-        fields = ('__all__')
         model = Genre
+        fields = ('name','slug')
+
 
 class TitleSerializer(serializers.ModelSerializer):
     name = serializers.SlugRelatedField(

@@ -23,16 +23,6 @@ from .views import (
 router = DefaultRouter()
 router.register('titles', TitleViewSet, basename='titles')
 router.register('users', UserViewSet, basename='users')
-# router.register(
-#     r'titles/(?P<title_id>\d+)/reviews',
-#     ReviewModelViewSet,
-#     'review',
-# )
-# router.register(
-#     r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
-#     CommentModelViewSet,
-#     'comment',
-# )
 router.register(
     'categories',
     CategoryViewSet,
@@ -45,32 +35,11 @@ router.register(
 )
 
 urlpatterns = [
-    path('v1/users/me/', get_info_me),
-    path("v1/token/", csrf_exempt(get_token), name="token_obtain_pair"),
-    path('v1/auth/email/', csrf_exempt(email)),
-    path('v1/token/refresh/',
+    path('users/me/', get_info_me),
+    path('', include(router.urls)),
+    path('token/', csrf_exempt(get_token), name='token_obtain_pair'),
+    path('auth/email/', csrf_exempt(email)),
+    path('token/refresh/',
          TokenRefreshView.as_view(),
          name='token_refresh'),
-    path(
-        'api-auth/',
-        include('rest_framework.urls', namespace='rest_framework'),
-    ),
-    path(
-        'api-token-auth/',
-        obtain_auth_token,
-    ),
-    path(
-        'token/',
-        TokenObtainPairView.as_view(),
-        name='token_obtain_pair'
-    ),
-    path(
-        'token/refresh/',
-        TokenRefreshView.as_view(),
-        name='token_refresh'
-    ),
-    path(
-        '',
-        include(router.urls),
-    ),
 ]

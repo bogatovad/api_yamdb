@@ -1,10 +1,8 @@
-from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
-
-
+from django.contrib.auth import get_user_model
 
 
 class CustomUser(AbstractUser):
@@ -20,8 +18,7 @@ class CustomUser(AbstractUser):
                             default='user')
 
 
-
-
+User = get_user_model()
 
 
 class Category(models.Model):
@@ -86,9 +83,6 @@ class Title(models.Model):
         verbose_name_plural = 'произведения'
 
 
-User = get_user_model()
-
-
 class Review(models.Model):
     title_id = models.ForeignKey(
         to=Title,
@@ -99,7 +93,7 @@ class Review(models.Model):
     text = models.TextField(verbose_name='текст', max_length=2000)
     score = models.IntegerField(
         verbose_name='оценка',
-        validators=[MinValueValidator(1), MaxValueValidator(10)],  # TODO: возможно, следует заменить на choices
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
     )
     author = models.ForeignKey(
         to=User,

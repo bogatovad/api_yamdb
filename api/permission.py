@@ -11,6 +11,7 @@ class AdminForCreator(BasePermission):
             return True
 
 
+
 class IsModerator(BasePermission):
     def has_permission(self, request, view):
         if request.user.is_anonymous:
@@ -30,4 +31,3 @@ class IsUser(BasePermission):
         if request.user.is_anonymous:
             return False
         return request.user.role == 'user'
-

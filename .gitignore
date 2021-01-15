@@ -1,13 +1,10 @@
 .git/*
 env/
 venv/
-api/migrations/
-test/
-reztest/
 
 __pycache__/
 *.py[cod]
-.gitignore
+
 .idea
 .DS_Store
 .AppleDouble

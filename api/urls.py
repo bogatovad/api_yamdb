@@ -35,11 +35,11 @@ router.register(
 )
 
 urlpatterns = [
-    path('users/me/', get_info_me),
-    path('', include(router.urls)),
-    path('token/', csrf_exempt(get_token), name='token_obtain_pair'),
-    path('auth/email/', csrf_exempt(email)),
-    path('token/refresh/',
+    path('v1/users/me/', get_info_me),
+    path('v1/', include(router.urls)),
+    path('v1/token/', csrf_exempt(get_token), name='token_obtain_pair'),
+    path('v1/auth/email/', csrf_exempt(email)),
+    path('v1/token/refresh/',
          TokenRefreshView.as_view(),
          name='token_refresh'),
 ]

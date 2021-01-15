@@ -23,7 +23,7 @@ User = get_user_model()
 
 class Category(models.Model):
     name = models.CharField(verbose_name='название', max_length=100)
-    slug = models.SlugField(null=False, unique=True)
+    slug = models.SlugField(unique=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -35,7 +35,7 @@ class Category(models.Model):
 
 class Genre(models.Model):
     name = models.CharField(verbose_name='название', max_length=100)
-    slug = models.SlugField(null=False, unique=True)
+    slug = models.SlugField(unique=True, blank=True)
 
     def __str__(self):
         return self.name

@@ -1,22 +1,8 @@
-from django.core.validators import MinValueValidator, MaxValueValidator
-from django.db import models
-from django.contrib.auth.models import AbstractUser
-from django.utils.translation import gettext_lazy as _
+import datetime
+
 from django.contrib.auth import get_user_model
-
-
-class CustomUser(AbstractUser):
-    bio = models.TextField(max_length=500, blank=True)
-    email = models.EmailField(_('email'), unique=True)
-    ROLE_CHOICES = [
-        ('user', 'User'),
-        ('moderator', 'Moderator'),
-        ('admin', 'Admin'),
-    ]
-    role = models.CharField(max_length=10,
-                            choices=ROLE_CHOICES,
-                            default='user')
-
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
 User = get_user_model()
 
@@ -46,28 +32,17 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField(verbose_name='название', max_length=200,
-                            unique=True)
+    name = models.CharField(verbose_name='название', max_length=200)
     year = models.IntegerField(
         verbose_name='год',
         blank=True,
         null=True,
-    )
-    rating = models.IntegerField(
-        verbose_name='рейтинг',
-        blank=True,
-        null=True,
+        validators=[MaxValueValidator(datetime.date.today().year)],
     )
     description = models.TextField(
         verbose_name='описание',
         max_length=2000,
         blank=True,
-    )
-    genre = models.ManyToManyField(
-        to=Genre,
-        related_name='titles',
-        blank=True,
-        verbose_name='жанры',
     )
     category = models.ForeignKey(
         to=Category,
@@ -77,6 +52,15 @@ class Title(models.Model):
         blank=True,
         null=True,
     )
+    genre = models.ManyToManyField(
+        to=Genre,
+        related_name='titles',
+        blank=True,
+        verbose_name='жанры',
+    )
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         verbose_name = 'произведение'
@@ -84,7 +68,7 @@ class Title(models.Model):
 
 
 class Review(models.Model):
-    title_id = models.ForeignKey(
+    title = models.ForeignKey(
         to=Title,
         on_delete=models.CASCADE,
         related_name='reviews',
@@ -93,7 +77,7 @@ class Review(models.Model):
     text = models.TextField(verbose_name='текст', max_length=2000)
     score = models.IntegerField(
         verbose_name='оценка',
-        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        validators=[MinValueValidator(1), MaxValueValidator(10)],  # TODO: возможно, следует заменить на choices
     )
     author = models.ForeignKey(
         to=User,
@@ -138,4 +122,3 @@ class Comment(models.Model):
     class Meta:
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'
-

@@ -1,12 +1,6 @@
 from rest_framework import serializers
-from .models import Comment, Review, Category, Genre, Title, User
 
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('first_name', 'last_name',
-                  'username', 'bio', 'email', 'role')
+from .models import Category, Comment, Genre, Review, Title
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -18,7 +12,13 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ['id', 'text', 'author', 'score', 'pub_date']
-
+        # validators = [
+        #     serializers.UniqueTogetherValidator(
+        #         queryset=Review.objects.all(),
+        #         fields=('title_id', 'author'),
+        #         message='cannot add another review'
+        #     )
+        # ]
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -33,23 +33,38 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+
     class Meta:
+        fields = ['name', 'slug']
         model = Category
-        fields = ('name','slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
+
     class Meta:
+        fields = ['name', 'slug']
         model = Genre
-        fields = ('name','slug')
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(many=True, read_only=True)
-    category = CategorySerializer(many=False)
+    rating = serializers.IntegerField(read_only=True)
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(read_only=True, many=True)
 
     class Meta:
-        fields = ('__all__')
+        fields = '__all__'
         model = Title
 
 
+class TitleCUDSerializer(TitleSerializer):
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all(),
+        required=False,
+    )
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        many=True,
+        queryset=Genre.objects.all(),
+        required=False,
+    )

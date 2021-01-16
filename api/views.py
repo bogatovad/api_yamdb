@@ -1,22 +1,27 @@
-from django.db.models import Avg
+from rest_framework import pagination
+from rest_framework.response import Response
 
-from django_filters.rest_framework import DjangoFilterBackend
-
-from rest_framework import filters, mixins, pagination, viewsets
+from .paginator import CustomPagination
+from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import SAFE_METHODS
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, \
+    IsAuthenticated
 
-from .filters import TitleFilter
-from .models import Category, Genre, Review, Title
-from .permissions import IsAuthorOrReadOnly, IsStaffOrReadOnly
+from .models import (
+    Review,
+    Title,
+    Category,
+    Genre
+                     )
+from .permission import AdminForCreator
 from .serializers import (
-    CategorySerializer,
     CommentSerializer,
-    GenreSerializer,
     ReviewSerializer,
-    TitleCUDSerializer,
+    CategorySerializer,
     TitleSerializer,
-)
+    GenreSerializer
+                          )
 
 
 class ReviewModelViewSet(viewsets.ModelViewSet):
@@ -33,8 +38,10 @@ class ReviewModelViewSet(viewsets.ModelViewSet):
         return title.reviews.all()
 
     def perform_create(self, serializer):
-        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        serializer.save(author=self.request.user, title_id=title)
+        queryset = self.get_queryset()
+        if queryset.filter(author=self.request.user, title_id=self.get_title()).exists():
+            raise ValidationError({'non_field_errors': ['cannot add another review']})
+        serializer.save(author=self.request.user, title_id=self.get_title())
 
 
 class CommentModelViewSet(viewsets.ModelViewSet):
@@ -68,12 +75,29 @@ class CategoryViewSet(mixins.CreateModelMixin,
                       viewsets.GenericViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['name', ]
-    lookup_field = 'slug'
     pagination_class = pagination.PageNumberPagination
     pagination_class.page_size = 20
-    permission_classes = [IsStaffOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, AdminForCreator]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        # queryset = get_object_or_404(Category, slug=instance)
+
+
+
+    def perform_create(self, serializer):
+        serializer.save()
 
 
 class GenreViewSet(mixins.CreateModelMixin,
@@ -82,9 +106,6 @@ class GenreViewSet(mixins.CreateModelMixin,
                    viewsets.GenericViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['name', ]
-    lookup_field = 'slug'
     pagination_class = pagination.PageNumberPagination
     pagination_class.page_size = 20
     permission_classes = [IsStaffOrReadOnly]

@@ -16,7 +16,12 @@ from .models import (
     Category,
     Genre
                      )
-from .permissions import IsAuthorOrReadOnly, IsStaffOrReadOnly
+from .permissions import (
+    IsAdministrator,
+    IsUser,
+    IsModerator,
+    IsStaffOrReadOnly,
+    IsAuthorOrReadOnly)
 from .serializers import (
     CommentSerializer,
     ReviewSerializer,
@@ -114,7 +119,10 @@ class CategoryViewSet(mixins.CreateModelMixin,
     lookup_field = 'slug'
     pagination_class = pagination.PageNumberPagination
     pagination_class.page_size = 20
-    permission_classes = [IsStaffOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly,
+                          IsModerator,
+                          IsUser,
+                          IsAdministrator]
 
 class GenreViewSet(mixins.CreateModelMixin,
                    mixins.DestroyModelMixin,
@@ -128,7 +136,10 @@ class GenreViewSet(mixins.CreateModelMixin,
     lookup_field = 'slug'
     pagination_class = pagination.PageNumberPagination
     pagination_class.page_size = 20
-    permission_classes = [IsStaffOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly,
+                          IsModerator,
+                          IsUser,
+                          IsAdministrator]
 
     def perform_create(self, serializer):
         serializer.save()
@@ -138,7 +149,10 @@ class GenreViewSet(mixins.CreateModelMixin,
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score')).all()
     serializer_class = TitleSerializer
-    permission_classes = [IsStaffOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly,
+                          IsModerator,
+                          IsUser,
+                          IsAdministrator]
     filter_backends = [DjangoFilterBackend]
     filter_class = TitleFilter
     pagination_class = pagination.PageNumberPagination

@@ -1,6 +1,7 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.http import JsonResponse
+
 from rest_framework_simplejwt.serializers import User
 from rest_framework.decorators import api_view
 from rest_framework_simplejwt.tokens import AccessToken
@@ -8,9 +9,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework import filters
-from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
-from .serializer import UserSerializer
+
+from .serializer import UserSerializer, UserMeSerializers
 from .models import User
 from .permissions import IsAdministrator
 
@@ -50,21 +51,22 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdministrator, ]
 
 
-@permission_classes(IsAuthenticated,)
-@api_view(['GET', 'PATCH'])
-def get_info_me(request):
-    if not request.user.is_anonymous:
+class UserMeViewSet(viewsets.ViewSet):
+    permission_classes = (IsAuthenticated,)
+    http_methods = ('get', 'patch')
+
+    def retrieve(self, request):
+        queryset = User.objects.filter(username=request.user)[0]
+        serializer = UserSerializer(queryset)
+        return Response(serializer.data)
+
+    def partial_update(self, request):
         user = User.objects.filter(username=request.user)[0]
-        if request.method == 'GET':
-            serializer = UserSerializer(user)
-            return Response(serializer.data)
-        if request.method == 'PATCH':
-            serializer = UserSerializer(user,
-                                        data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data,
-                                status=status.HTTP_200_OK)
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
-    return Response(status=status.HTTP_401_UNAUTHORIZED)
+        serializer = UserMeSerializers(user, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,
+                            status=status.HTTP_200_OK)
+        return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)

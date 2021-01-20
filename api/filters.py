@@ -4,7 +4,10 @@ from .models import Category, Genre, Title
 
 
 class TitleFilter(django_filters.rest_framework.FilterSet):
-    name = django_filters.CharFilter(field_name='name', lookup_expr='contains')
+    name = django_filters.CharFilter(
+        field_name='name',
+        lookup_expr='icontains'
+    )
     year = django_filters.NumberFilter(field_name='year')
     category = django_filters.ModelChoiceFilter(
         queryset=Category.objects.all(),

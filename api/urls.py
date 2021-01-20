@@ -11,6 +11,8 @@ from .views import (
 )
 
 v1_router = DefaultRouter()
+v1_router.register('categories', CategoryViewSet, 'category')
+v1_router.register('genres', GenreViewSet, 'genre')
 v1_router.register('titles', TitleViewSet, 'title')
 v1_router.register(
     r'titles/(?P<title_id>\d+)/reviews',
@@ -21,16 +23,6 @@ v1_router.register(
     r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
     CommentModelViewSet,
     'comment',
-)
-v1_router.register(
-    'categories',
-    CategoryViewSet,
-    'categorys',
-)
-v1_router.register(
-    'genres',
-    GenreViewSet,
-    'genres'
 )
 
 urlpatterns = [

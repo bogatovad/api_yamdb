@@ -1,24 +1,24 @@
-from rest_framework import serializers
+from rest_framework import serializers, validators
 
-from .models import Category, Comment, Genre, Review, Title
+from .models import Category, Comment, Genre, Review, Title, User
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
+        queryset=User.objects.all(),
         slug_field='username',
-        read_only=True,
     )
 
     class Meta:
         model = Review
-        fields = ['id', 'text', 'author', 'score', 'pub_date']
-        # validators = [
-        #     serializers.UniqueTogetherValidator(
-        #         queryset=Review.objects.all(),
-        #         fields=('title_id', 'author'),
-        #         message='cannot add another review'
-        #     )
-        # ]
+        fields = '__all__'
+        validators = [
+            validators.UniqueTogetherValidator(
+                queryset=Review.objects.all(),
+                fields=['author', 'title_id'],
+                message='You cannot add another review on this title.'
+            ),
+        ]
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -29,21 +29,21 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id', 'text', 'author', 'pub_date']
+        exclude = ['review_id', ]
 
 
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = ['name', 'slug']
         model = Category
+        exclude = ['id', ]
 
 
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = ['name', 'slug']
         model = Genre
+        exclude = ['id', ]
 
 
 class TitleSerializer(serializers.ModelSerializer):

@@ -28,6 +28,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+EMAIL_ADDRESS = 'prakticum@yandex.ru'
+
 AUTH_USER_MODEL = 'auth_user.CustomUser'
 
 # Application definition
